@@ -170,10 +170,10 @@ impl Type {
 }
 
 #[derive(Debug, Default)]
-struct DirectoryOptions {
-    catch_all: AddressMapping,
-    subaddressing: AddressMapping,
-    superuser_group: String,
+pub struct DirectoryOptions {
+    pub catch_all: AddressMapping,
+    pub subaddressing: AddressMapping,
+    pub superuser_group: String,
 }
 
 #[derive(Debug, Default)]
