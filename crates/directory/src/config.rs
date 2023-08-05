@@ -60,6 +60,19 @@ impl ConfigDirectory for Config {
                 "smtp" => SmtpDirectory::from_config(self, prefix, false)?,
                 "lmtp" => SmtpDirectory::from_config(self, prefix, true)?,
                 "memory" => MemoryDirectory::from_config(self, prefix)?,
+                path if path.ends_with(".so") => {
+                    // Handle dynamic directory providers
+                    unsafe {
+                        let lib = libloading::Library::new(path).map_err(|err| {
+                        format!("Failed to load library at {path:?}: {err}", err = err)
+                    })?;
+                        let func: libloading::Symbol<unsafe fn(&Config, (&str, &str)) -> utils::config::Result<Arc<dyn crate::Directory>>> =
+                            lib.get(b"from_config").map_err(|err| {
+                                format!("Failed to load function 'from_config' from library at {path:?}: {err}", err=err)
+                            })?;
+                        func(self, prefix)?
+                    }
+                },
                 unknown => {
                     return Err(format!("Unknown directory type: {unknown:?}"));
                 }
